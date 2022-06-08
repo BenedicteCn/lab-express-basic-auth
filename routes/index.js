@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jsonwebtoken = require("jsonwebtoken");
 const User = require("../models/User.model");
 const saltRounds = 10;
+const isAuthenticated = require("../middleware/isAuthenticated");
 
 /*
   GET /signup
@@ -96,5 +97,31 @@ router.get("/verify", async (req, res, next) => {
     res.status(400).json({ message: "Invalid token" });
   }
 });
+
+// - `/main` - Add a funny picture of a cat and a link back to the home page
+
+router.get("/main", isAuthenticated, async (req, res, next) => {
+  try {
+    res.status(200).json("ok success");
+    res.sendFile("views/auth/main.html", { root });
+  } catch (err) {
+    // having the error as the argument of next allows us to get into the second middleware
+    // from error-handling.js if there is a database error (we don't want a 404 in this case)
+    next(err);
+  }
+});
+
+router.get("/private", isAuthenticated, async (req, res, next) => {
+  try {
+    res.status(200).json("ok success");
+    res.sendFile("views/auth/private.html", { root });
+  } catch (err) {
+    // having the error as the argument of next allows us to get into the second middleware
+    // from error-handling.js if there is a database error (we don't want a 404 in this case)
+    next(err);
+  }
+});
+
+// - `/private` - Add your favorite `gif` and an `<h1>` denoting the page as private.
 
 module.exports = router;
