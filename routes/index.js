@@ -1,12 +1,8 @@
 const router = require("express").Router();
 const bcrypt = require("bcryptjs");
+const jsonwebtoken = require("jsonwebtoken");
 const User = require("../models/User.model");
 const saltRounds = 10;
-
-/* GET default route */
-router.get("/", (req, res, next) => {
-  res.json({ success: true });
-});
 
 /*
   GET /signup
@@ -19,9 +15,9 @@ router.get("/signup", async (req, res, next) => {
 });
 
 /*
-    POST /signup
-    Create a user
-  */
+  POST /signup
+  Create a user
+*/
 router.post("/signup", async (req, res, next) => {
   try {
     const { username, password } = req.body;
@@ -52,8 +48,8 @@ router.post("/signup", async (req, res, next) => {
 });
 
 /* POST /login
-  Logging the user into our website
-  */
+Logging the user into our website
+*/
 router.post("/login", async (req, res, next) => {
   const { username, password } = req.body;
   const foundUser = await User.findOne({ username });
@@ -68,9 +64,15 @@ router.post("/login", async (req, res, next) => {
     res.status(401).json({ message: "password does not match" });
     return;
   }
-  res
-    .status(200)
-    .json({ isLoggedIn: true, message: "yayayaya you are " + username });
+
+  const payload = { username };
+
+  const authToken = jsonwebtoken.sign(payload, process.env.TOKEN_SECRET, {
+    algorithm: "HS256",
+    expiresIn: "150s",
+  });
+
+  res.status(200).json({ isLoggedIn: true, authToken });
 });
 
 router.get("/verify", async (req, res, next) => {
